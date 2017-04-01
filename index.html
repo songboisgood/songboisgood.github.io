@@ -346,14 +346,12 @@
       
         
           
-            <p><img src="/2017/04/01/client-server-socket/client_server.png" alt=""></p>
-<img src="/2017/04/01/client-server-socket/04/01/client-server-socket/client_server.png" alt="Client Server Communication" title="Client Server Communication">
-<h2 id="client-server-tcp-通信图"><a href="#Client-Server-TCP-通信图" class="headerlink" title="Client Server TCP 通信图"></a>Client Server TCP 通信图</h2><p><img src="/2017/04/01/client-server-socket/" alt=""></p>
+            <h2 id="client-server-tcp-通信图"><a href="#Client-Server-TCP-通信图" class="headerlink" title="Client Server TCP 通信图"></a>Client Server TCP 通信图</h2><p><img src="/2017/04/01/client-server-socket/client_server.png" alt=""></p>
 <h2 id="server端"><a href="#Server端" class="headerlink" title="Server端"></a>Server端</h2><p>S1. socket函数： 创建一个socket<br>S2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址<br>S3. listen函数： 监听这个socket<br>S4. accept/accept4函数：阻塞等待Client的connect。<br>S5. recv/recvfrom/recvmsg/read函数: 从Client接收数据。<br>S6. send/sendto/sendmsg/write函数：给Client发送数据。</p>
 <h2 id="client端"><a href="#Client端" class="headerlink" title="Client端"></a>Client端</h2><p>C1. socket函数： 创建一个socket。<br>C2. connect函数：连接 Server<br>C3. send/sendto/sendmsg/write函数 : 向 Server 发消息<br>C4. recv/recvfrom/recvmsg/read函数: 从Server读取数据<br>C5. close函数：close这个socket</p>
 <h2 id="函数解释"><a href="#函数解释" class="headerlink" title="函数解释"></a>函数解释</h2><h3 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h3><blockquote>
 <blockquote>
-<p>int socket(int domain, int type, int protocol);  </p>
+<p>int socket(int domain, int type, int protocol);</p>
 </blockquote>
 </blockquote>
 <p>创建一个socket。socket默认是blocking的，可以用fcntl设置成non-blocking，如果是non-blocking，对这个socket accept或者recv时没有ready就直接报错。</p>
@@ -361,7 +359,7 @@
 <li>domain : 又称为协议族（family）。常用的协议族有，AF_INET、AF_INET6、AF_LOCAL（或称AF_UNIX，Unix域socket）等等。<ul>
 <li>AF_INET代表IPV4: <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff543744(v=vs.85).aspx" target="_blank" rel="external">https://msdn.microsoft.com/en-us/library/windows/hardware/ff543744(v=vs.85).aspx</a></li>
 <li>AF_INET6代表IPV6：<a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff543746(v=vs.85).aspx" target="_blank" rel="external">https://msdn.microsoft.com/en-us/library/windows/hardware/ff543746(v=vs.85).aspx</a></li>
-<li>AF_UNIX代表UNIX Domain Socket IPC，主要用于进程间通信：<a href="https://akaedu.github.io/book/ch37s04.html" target="_blank" rel="external">https://akaedu.github.io/book/ch37s04.html</a> </li>
+<li>AF_UNIX代表UNIX Domain Socket IPC，主要用于进程间通信：<a href="https://akaedu.github.io/book/ch37s04.html" target="_blank" rel="external">https://akaedu.github.io/book/ch37s04.html</a></li>
 </ul>
 </li>
 <li>type：指定socket类型。常用的socket类型有，SOCK_STREAM、SOCK_DGRAM、SOCK_RAW等<ul>
@@ -378,15 +376,15 @@
 <p>int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)</p>
 </blockquote>
 </blockquote>
-<p>把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址 </p>
+<p>把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址</p>
 <ul>
 <li>sockfd：之前socket函数返回的sockfd</li>
 <li><p>sockaddr： 地址</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">// IPV4地址  </div><div class="line">struct sockaddr_in &#123;</div><div class="line">    sa_family_t    sin_family; /* address family: AF_INET */</div><div class="line">    in_port_t      sin_port;   /* port in network byte order */</div><div class="line">    struct in_addr sin_addr;   /* internet address */</div><div class="line">&#125;;</div><div class="line">// IPV6地址</div><div class="line">struct sockaddr_in6 &#123; </div><div class="line">    sa_family_t     sin6_family;   /* AF_INET6 */ </div><div class="line">    in_port_t       sin6_port;     /* port number */ </div><div class="line">    uint32_t        sin6_flowinfo; /* IPv6 flow information */ </div><div class="line">    struct in6_addr sin6_addr;     /* IPv6 address */ </div><div class="line">    uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */ </div><div class="line">&#125;;</div><div class="line">// UNIX Domain地址</div><div class="line">#define UNIX_PATH_MAX    108</div><div class="line"></div><div class="line">struct sockaddr_un &#123; </div><div class="line">    sa_family_t sun_family;               /* AF_UNIX */ </div><div class="line">    char        sun_path[UNIX_PATH_MAX];  /* pathname */ </div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">// IPV4地址</div><div class="line">struct sockaddr_in &#123;</div><div class="line">    sa_family_t    sin_family; /* address family: AF_INET */</div><div class="line">    in_port_t      sin_port;   /* port in network byte order */</div><div class="line">    struct in_addr sin_addr;   /* internet address */</div><div class="line">&#125;;</div><div class="line">// IPV6地址</div><div class="line">struct sockaddr_in6 &#123;</div><div class="line">    sa_family_t     sin6_family;   /* AF_INET6 */</div><div class="line">    in_port_t       sin6_port;     /* port number */</div><div class="line">    uint32_t        sin6_flowinfo; /* IPv6 flow information */</div><div class="line">    struct in6_addr sin6_addr;     /* IPv6 address */</div><div class="line">    uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */</div><div class="line">&#125;;</div><div class="line">// UNIX Domain地址</div><div class="line">#define UNIX_PATH_MAX    108</div><div class="line"></div><div class="line">struct sockaddr_un &#123;</div><div class="line">    sa_family_t sun_family;               /* AF_UNIX */</div><div class="line">    char        sun_path[UNIX_PATH_MAX];  /* pathname */</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 </li>
 <li><p>addrlen：地址长度</p>
 </li>
-<li>返回：成功返回0，错误返回-1 </li>
+<li>返回：成功返回0，错误返回-1</li>
 </ul>
 <h2 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h2><blockquote>
 <blockquote>
@@ -397,7 +395,7 @@
 <ul>
 <li>sockfd：监听的socket</li>
 <li>backlog：ACCPET队列的长度</li>
-<li>返回：成功返回0，错误返回-1 </li>
+<li>返回：成功返回0，错误返回-1</li>
 </ul>
 <h3 id="accept函数"><a href="#accept函数" class="headerlink" title="accept函数"></a>accept函数</h3><blockquote>
 <blockquote>
@@ -407,14 +405,14 @@
 <p>accpet函数将阻塞，等待ACCPT队列有元素。就是等待Client的connect来唤醒，建立一个Client的Socket并且返回。</p>
 <ul>
 <li>sockfd ：Server之前创建的socket的fd</li>
-<li>sockaddr：用于保存客户端的地址 </li>
+<li>sockaddr：用于保存客户端的地址</li>
 <li>addrlen：用于保存客户端地址的长度</li>
 <li>flags：accept4比accept多出来的一个参数。flags = 0 时 accept4和accept没区别，flags=SOCK_NONBLOCK等于直接设置客户端socket为NONBLOCK；flags=SOCK_CLOEXEC等于直接设置客户端socket为FD_CLOEXEC，使得进程在fork或者execve时自动关闭socket。</li>
 <li>返回 客户端socket的fd</li>
 </ul>
 <h3 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h3><blockquote>
 <blockquote>
-<p>int connect(int sockfd, const struct sockaddr *addr,  socklen_t addrlen);  </p>
+<p>int connect(int sockfd, const struct sockaddr *addr,  socklen_t addrlen);</p>
 </blockquote>
 </blockquote>
 <p>连接server，是一个block函数</p>
@@ -422,11 +420,11 @@
 <li>sockfd：Client的socket fd</li>
 <li>addr：Server的地址</li>
 <li>addrlen：Server的地址的长度</li>
-<li>返回：成功返回0，错误返回-1 </li>
+<li>返回：成功返回0，错误返回-1</li>
 <li>详细做法：<ul>
 <li>发起SYN请求，请求与Server建立连接，此时称为第一次握手</li>
 <li>Server（listen之后） 在接受到SYN请求之后，把请求方放入SYN队列中，并给Client回复一个确认帧ACK，此帧还会携带一个请求与Client建立连接的请求标志，也就是SYN，这称为第二次握手</li>
-<li>Client收到SYN+ACK帧后，connect返回，并发送确认建立连接帧ACK给Server。这称为第三次握手 </li>
+<li>Client收到SYN+ACK帧后，connect返回，并发送确认建立连接帧ACK给Server。这称为第三次握手</li>
 <li>Server收到ACK帧后，会把请求方从SYN队列中移出，放至ACCEPT队列中，而accept函数也等到了自己的资源，从阻塞中唤醒</li>
 </ul>
 </li>
@@ -439,7 +437,7 @@
 <p>从kernel中的TCP接收缓冲区里读取数据</p>
 <ul>
 <li>recv vs read : recv比read多一个flag参数用来控制<ul>
-<li>数据在不超过指定的长度的时候read会有多少读多少，没有数据则会一直等待。所以一般情况下：我们读取数据都需要采用循环读的方式读取数据，因为一次read 完毕不能保证读到我们需要长度的数据，read 完一次需要判断读到的数据长度再决定是否还需要再次读取。 </li>
+<li>数据在不超过指定的长度的时候read会有多少读多少，没有数据则会一直等待。所以一般情况下：我们读取数据都需要采用循环读的方式读取数据，因为一次read 完毕不能保证读到我们需要长度的数据，read 完一次需要判断读到的数据长度再决定是否还需要再次读取。</li>
 <li>recv比read多一个flag参数用来控制，flag = MSG_WAITALLs时下recv 是会等待直到读取到buff_size 长度的数据。flag = MSG_PEEK,表示只是从系统缓冲区中读取内容,而不清除系统缓冲区的内容.这样下次读的时候,仍然是一样的内容.一般在有多个进程读写数据时可以使用这个标志.</li>
 </ul>
 </li>
@@ -453,14 +451,14 @@
 <p>write成功返回，只是buf中的数据被复制到了kernel中的TCP发送缓冲区。当kernel的该socket的发送缓冲区已满时，<strong>write会阻塞</strong>。对于每个socket，拥有自己的send buffer和receive buffer。从Linux 2.6开始，两个缓冲区大小都由系统来自动调节（autotuning），但一般在default和max之间浮动。 已经发送到网络的数据依然需要暂存在send buffer中，只有收到对方的ack后，kernel才从buffer中清除这一部分数据，为后续发送数据腾出空间。一般来说，由于接收端进程从socket读数据的速度跟不上发送端进程向socket写数据的速度，最终导致发送端write调用阻塞。</p>
 <ul>
 <li>send vs write ：send比write多一个flag参数用来控制<ul>
-<li>flags参数：<a href="https://linux.die.net/man/2/send" target="_blank" rel="external">https://linux.die.net/man/2/send</a> </li>
+<li>flags参数：<a href="https://linux.die.net/man/2/send" target="_blank" rel="external">https://linux.die.net/man/2/send</a></li>
 </ul>
 </li>
 <li>send vs sendto vs sendmsg：send主要是针对有连接的情况（TCP），sendto 和  sendmsg既可以写有连接的，也可以写无连接的（UDP）</li>
 </ul>
 <h2 id="closeshutdown函数"><a href="#close-shutdown函数" class="headerlink" title="close/shutdown函数"></a>close/shutdown函数</h2><blockquote>
 <blockquote>
-<p>int close(sockfd);<br>int shutdown(int sockfd, int how); </p>
+<p>int close(sockfd);<br>int shutdown(int sockfd, int how);</p>
 </blockquote>
 </blockquote>
 <p>区别：<a href="http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown" target="_blank" rel="external">http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown</a></p>
