@@ -87,12 +87,22 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Songbo's Blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="Client Server TCP 通信图
+Server端S1. socket函数： 创建一个socketS2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址S3. listen函数： 监听这个socketS4. accept/accept4函数：阻塞等待Client的connect。S5. recv/recvfrom/recvmsg/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最简单的Client Server TCP通信介绍">
+<meta property="og:url" content="http://yoursite.com/2017/04/01/client-server-socket/index.html">
 <meta property="og:site_name" content="Songbo's Blog">
+<meta property="og:description" content="Client Server TCP 通信图
+Server端S1. socket函数： 创建一个socketS2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址S3. listen函数： 监听这个socketS4. accept/accept4函数：阻塞等待Client的connect。S5. recv/recvfrom/recvmsg/">
+<meta property="og:image" content="http://yoursite.com/2017/04/01/client-server-socket/04/01/client-server-socket/client-server-socket.jpeg">
+<meta property="og:image" content="http://yoursite.com/2017/04/01/client-server-socket/">
+<meta property="og:updated_time" content="2017-04-01T13:28:18.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Songbo's Blog">
+<meta name="twitter:title" content="最简单的Client Server TCP通信介绍">
+<meta name="twitter:description" content="Client Server TCP 通信图
+Server端S1. socket函数： 创建一个socketS2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址S3. listen函数： 监听这个socketS4. accept/accept4函数：阻塞等待Client的connect。S5. recv/recvfrom/recvmsg/">
+<meta name="twitter:image" content="http://yoursite.com/2017/04/01/client-server-socket/04/01/client-server-socket/client-server-socket.jpeg">
 
 
 
@@ -120,13 +130,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/04/01/client-server-socket/"/>
 
 
 
 
 
-  <title> Songbo's Blog </title>
+  <title> 最简单的Client Server TCP通信介绍 | Songbo's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -151,9 +161,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-   page-home 
- ">
+  <div class="container sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -236,9 +244,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -268,10 +276,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2017/04/01/client-server-socket/" itemprop="url">
-                  最简单的Client Server TCP通信介绍
-                </a>
+                最简单的Client Server TCP通信介绍
               
             
           </h1>
@@ -344,9 +349,7 @@
       
 
       
-        
-          
-            <img src="/2017/04/01/client-server-socket/04/01/client-server-socket/client-server-socket.jpeg" alt="This is an client-server-socket image" title="This is an client-server-socket image">
+        <img src="/2017/04/01/client-server-socket/04/01/client-server-socket/client-server-socket.jpeg" alt="This is an client-server-socket image" title="This is an client-server-socket image">
 <h2 id="client-server-tcp-通信图"><a href="#Client-Server-TCP-通信图" class="headerlink" title="Client Server TCP 通信图"></a>Client Server TCP 通信图</h2><p><img src="/2017/04/01/client-server-socket/" alt=""></p>
 <h2 id="server端"><a href="#Server端" class="headerlink" title="Server端"></a>Server端</h2><p>S1. socket函数： 创建一个socket<br>S2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址<br>S3. listen函数： 监听这个socket<br>S4. accept/accept4函数：阻塞等待Client的connect。<br>S5. recv/recvfrom/recvmsg/read函数: 从Client接收数据。<br>S6. send/sendto/sendmsg/write函数：给Client发送数据。</p>
 <h2 id="client端"><a href="#Client端" class="headerlink" title="Client端"></a>Client端</h2><p>C1. socket函数： 创建一个socket。<br>C2. connect函数：连接 Server<br>C3. send/sendto/sendmsg/write函数 : 向 Server 发消息<br>C4. recv/recvfrom/recvmsg/read函数: 从Server读取数据<br>C5. close函数：close这个socket</p>
@@ -464,20 +467,27 @@
 </blockquote>
 <p>区别：<a href="http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown" target="_blank" rel="external">http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown</a></p>
 
-          
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <div>
+      
+        
+
       
     </div>
 
@@ -485,21 +495,45 @@
       
 
       
-
+        
       
 
       
+
       
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
 
 
           </div>
@@ -507,6 +541,12 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="hypercomments_widget"></div>
+    
+  </div>
+
 
         </div>
         
@@ -526,8 +566,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -571,6 +620,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#client-server-tcp-通信图"><span class="nav-number">1.</span> <span class="nav-text">Client Server TCP 通信图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#server端"><span class="nav-number">2.</span> <span class="nav-text">Server端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#client端"><span class="nav-number">3.</span> <span class="nav-text">Client端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数解释"><span class="nav-number">4.</span> <span class="nav-text">函数解释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#socket函数"><span class="nav-number">4.1.</span> <span class="nav-text">socket函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind函数"><span class="nav-number">4.2.</span> <span class="nav-text">bind函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#listen函数"><span class="nav-number">5.</span> <span class="nav-text">listen函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#accept函数"><span class="nav-number">5.1.</span> <span class="nav-text">accept函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#connect函数"><span class="nav-number">5.2.</span> <span class="nav-text">connect函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#recvrecvfromrecvmsgread函数"><span class="nav-number">5.3.</span> <span class="nav-text">recv/recvfrom/recvmsg/read函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sendsendtosendmsgwrite-函数"><span class="nav-number">6.</span> <span class="nav-text">send/sendto/sendmsg/write 函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#closeshutdown函数"><span class="nav-number">7.</span> <span class="nav-text">close/shutdown函数</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -685,6 +750,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
 
   
 
@@ -708,6 +777,8 @@
 
 		_hcwp.push({widget:"Bloggerstream", widget_id: 88976, selector:".hc-comment-count", label: "{\%COUNT%\}" });
 
+		
+		_hcwp.push({widget:"Stream", widget_id: 88976, xid: "2017/04/01/client-server-socket/"});
 		
 
 		(function() {
