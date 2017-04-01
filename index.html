@@ -346,7 +346,8 @@
       
         
           
-            <img src="/2017/04/01/client-server-socket/04/01/client-server-socket/client-server-socket.png" alt="Client Server Communication" title="Client Server Communication">
+            <p><img src="/2017/04/01/client-server-socket/client_server.png" alt=""></p>
+<img src="/2017/04/01/client-server-socket/04/01/client-server-socket/client_server.png" alt="Client Server Communication" title="Client Server Communication">
 <h2 id="client-server-tcp-通信图"><a href="#Client-Server-TCP-通信图" class="headerlink" title="Client Server TCP 通信图"></a>Client Server TCP 通信图</h2><p><img src="/2017/04/01/client-server-socket/" alt=""></p>
 <h2 id="server端"><a href="#Server端" class="headerlink" title="Server端"></a>Server端</h2><p>S1. socket函数： 创建一个socket<br>S2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址<br>S3. listen函数： 监听这个socket<br>S4. accept/accept4函数：阻塞等待Client的connect。<br>S5. recv/recvfrom/recvmsg/read函数: 从Client接收数据。<br>S6. send/sendto/sendmsg/write函数：给Client发送数据。</p>
 <h2 id="client端"><a href="#Client端" class="headerlink" title="Client端"></a>Client端</h2><p>C1. socket函数： 创建一个socket。<br>C2. connect函数：连接 Server<br>C3. send/sendto/sendmsg/write函数 : 向 Server 发消息<br>C4. recv/recvfrom/recvmsg/read函数: 从Server读取数据<br>C5. close函数：close这个socket</p>
