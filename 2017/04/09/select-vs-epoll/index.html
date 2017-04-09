@@ -71,7 +71,7 @@
 <link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Tornado," />
 
 
 
@@ -87,12 +87,16 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Songbo's Blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="背景在 http://songboisgood.github.io/2017/04/01/client-server-socket/ 里，我们已经介绍了client和server如何通信。但一般来说，一个Web Server需要处理很多请求，从网上抄了个最简单的例子如下：1234567891011121314151617181920212223242526272829303132333435363">
+<meta property="og:type" content="article">
+<meta property="og:title" content="select vs epoll">
+<meta property="og:url" content="http://yoursite.com/2017/04/09/select-vs-epoll/index.html">
 <meta property="og:site_name" content="Songbo's Blog">
+<meta property="og:description" content="背景在 http://songboisgood.github.io/2017/04/01/client-server-socket/ 里，我们已经介绍了client和server如何通信。但一般来说，一个Web Server需要处理很多请求，从网上抄了个最简单的例子如下：1234567891011121314151617181920212223242526272829303132333435363">
+<meta property="og:updated_time" content="2017-04-09T09:57:39.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Songbo's Blog">
+<meta name="twitter:title" content="select vs epoll">
+<meta name="twitter:description" content="背景在 http://songboisgood.github.io/2017/04/01/client-server-socket/ 里，我们已经介绍了client和server如何通信。但一般来说，一个Web Server需要处理很多请求，从网上抄了个最简单的例子如下：1234567891011121314151617181920212223242526272829303132333435363">
 
 
 
@@ -120,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/04/09/select-vs-epoll/"/>
 
 
 
 
 
-  <title> Songbo's Blog </title>
+  <title> select vs epoll | Songbo's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -151,9 +155,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-   page-home 
- ">
+  <div class="container sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -236,9 +238,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -268,10 +270,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2017/04/09/select-vs-epoll/" itemprop="url">
-                  select vs epoll
-                </a>
+                select vs epoll
               
             
           </h1>
@@ -344,9 +343,7 @@
       
 
       
-        
-          
-            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>在 <a href="http://songboisgood.github.io/2017/04/01/client-server-socket/" target="_blank" rel="external">http://songboisgood.github.io/2017/04/01/client-server-socket/</a> 里，我们已经介绍了client和server如何通信。但一般来说，一个Web Server需要处理很多请求，从网上抄了个最简单的例子如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">int main() &#123;</div><div class="line">	int server_fd, client_fd;</div><div class="line">	struct sockaddr_in server_addr;</div><div class="line">    struct sockaddr_in client_addr;</div><div class="line">	int sin_size;</div><div class="line">    char buff[100];</div><div class="line">    int numbytes;</div><div class="line"></div><div class="line">    //建立TCP套接口</div><div class="line">    if((server_fd = socket(AF_INET,SOCK_STREAM,0))==-1) &#123;</div><div class="line">		perror(&quot;socket&quot;);</div><div class="line">		exit(1);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	//初始化结构体，并绑定2323端口</div><div class="line">	server_addr.sin_family = AF_INET;</div><div class="line">	server_addr.sin_port = htons(2323);</div><div class="line">	server_addr.sin_addr.s_addr = INADDR_ANY;</div><div class="line">	bzero(&amp;(server_addr.sin_zero),8);</div><div class="line"></div><div class="line">    if(bind(server_fd,(struct sockaddr *)&amp;server_addr,sizeof(struct sockaddr))==-1)</div><div class="line">    &#123;</div><div class="line">		perror(&quot;bind&quot;);</div><div class="line">      	exit(1);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">	//监听套接口</div><div class="line">	if(listen(server_fd,10)==-1) &#123;</div><div class="line">		perror(&quot;listen&quot;);</div><div class="line">		exit(1);</div><div class="line">	&#125;</div><div class="line">	printf(&quot;server is run.../n&quot;);</div><div class="line"></div><div class="line">	//等待连接</div><div class="line">	while(1) &#123;</div><div class="line">		sin_size = sizeof(struct sockaddr_in);</div><div class="line"></div><div class="line">        //如果建立连接，将产生一个全新的套接字</div><div class="line">		if((client_fd = accept(server_fd,(struct sockaddr *)&amp;client_addr,&amp;sin_size))==-1)</div><div class="line">		&#123;</div><div class="line">			perror(&quot;accept&quot;);</div><div class="line">			exit(1);</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		//读取客户端发来的信息</div><div class="line">        if((numbytes = recv(client_fd,buff,sizeof(buff),0))==-1)</div><div class="line">		&#123;</div><div class="line">			perror(&quot;recv&quot;);</div><div class="line">			exit(1);</div><div class="line">		&#125;</div><div class="line">		buff[numbytes]=&apos;/0&apos;;</div><div class="line"></div><div class="line">		//将从客户端接收到的信息再发回客户端</div><div class="line">		if(send(client_fd,buff,strlen(buff),0)==-1)</div><div class="line">			perror(&quot;send&quot;);</div><div class="line">			close(new_fd);</div><div class="line">			exit(0);</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		close(client_fd);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	close(server_fd);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>在 <a href="http://songboisgood.github.io/2017/04/01/client-server-socket/" target="_blank" rel="external">http://songboisgood.github.io/2017/04/01/client-server-socket/</a> 里，我们已经介绍了client和server如何通信。但一般来说，一个Web Server需要处理很多请求，从网上抄了个最简单的例子如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">int main() &#123;</div><div class="line">	int server_fd, client_fd;</div><div class="line">	struct sockaddr_in server_addr;</div><div class="line">    struct sockaddr_in client_addr;</div><div class="line">	int sin_size;</div><div class="line">    char buff[100];</div><div class="line">    int numbytes;</div><div class="line"></div><div class="line">    //建立TCP套接口</div><div class="line">    if((server_fd = socket(AF_INET,SOCK_STREAM,0))==-1) &#123;</div><div class="line">		perror(&quot;socket&quot;);</div><div class="line">		exit(1);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	//初始化结构体，并绑定2323端口</div><div class="line">	server_addr.sin_family = AF_INET;</div><div class="line">	server_addr.sin_port = htons(2323);</div><div class="line">	server_addr.sin_addr.s_addr = INADDR_ANY;</div><div class="line">	bzero(&amp;(server_addr.sin_zero),8);</div><div class="line"></div><div class="line">    if(bind(server_fd,(struct sockaddr *)&amp;server_addr,sizeof(struct sockaddr))==-1)</div><div class="line">    &#123;</div><div class="line">		perror(&quot;bind&quot;);</div><div class="line">      	exit(1);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">	//监听套接口</div><div class="line">	if(listen(server_fd,10)==-1) &#123;</div><div class="line">		perror(&quot;listen&quot;);</div><div class="line">		exit(1);</div><div class="line">	&#125;</div><div class="line">	printf(&quot;server is run.../n&quot;);</div><div class="line"></div><div class="line">	//等待连接</div><div class="line">	while(1) &#123;</div><div class="line">		sin_size = sizeof(struct sockaddr_in);</div><div class="line"></div><div class="line">        //如果建立连接，将产生一个全新的套接字</div><div class="line">		if((client_fd = accept(server_fd,(struct sockaddr *)&amp;client_addr,&amp;sin_size))==-1)</div><div class="line">		&#123;</div><div class="line">			perror(&quot;accept&quot;);</div><div class="line">			exit(1);</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		//读取客户端发来的信息</div><div class="line">        if((numbytes = recv(client_fd,buff,sizeof(buff),0))==-1)</div><div class="line">		&#123;</div><div class="line">			perror(&quot;recv&quot;);</div><div class="line">			exit(1);</div><div class="line">		&#125;</div><div class="line">		buff[numbytes]=&apos;/0&apos;;</div><div class="line"></div><div class="line">		//将从客户端接收到的信息再发回客户端</div><div class="line">		if(send(client_fd,buff,strlen(buff),0)==-1)</div><div class="line">			perror(&quot;send&quot;);</div><div class="line">			close(new_fd);</div><div class="line">			exit(0);</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		close(client_fd);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	close(server_fd);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>上面的流程有什么问题呢？问题在于很多函数例如accept，recv，write都是阻塞的，而web server必须有同时处理很多请求的能力，不能在一个请求阻塞的时候就不处理其他请求了。</p>
 <p>一般的做法是accept之后把client的socket交由一个单独的线程/进程来继续处理，然后主线程继续循环accept。这样的问题是线程/进程创建有开销，再好的线程池也没法handle太多线程（C10K问题 <a href="http://www.kegel.com/c10k.html）" target="_blank" rel="external">http://www.kegel.com/c10k.html）</a><br>所以像Nginx， Tornado这些Web Server就使用异步的方式来处理请求，利用操作系统的select， epoll等方法构造一个无阻塞的Web Server。</p>
 <h1 id="select函数"><a href="#select函数" class="headerlink" title="select函数"></a>select函数</h1><p>对于Web Server来说，阻塞一般源于 socket is not ready: 例如内核的输出buffer满了，所以write函数阻塞；内核的ACCEPT队列为空，所以accept函数阻塞。</p>
@@ -459,300 +456,95 @@
 <li>由于在内核Cache里有<strong>就绪列表</strong>，每次epoll_wait时，只需要扫描就绪列表就可以，不用扫描所有的fd了</li>
 </ul>
 
-          
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <div>
+      
+        
+
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/01/client-server-socket/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Songbo Liao">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Songbo's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/04/01/client-server-socket/" itemprop="url">
-                  最简单的Client Server TCP通信介绍
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-01T21:09:36+08:00">
-                2017-04-01
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
-          
-            
-            <!--noindex-->
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2017/04/01/client-server-socket/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count hc-comment-count" data-xid="2017/04/01/client-server-socket/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-              <!--/noindex-->
-            
-          
-
-          
-          
-             <span id="/2017/04/01/client-server-socket/" class="leancloud_visitors" data-flag-title="最简单的Client Server TCP通信介绍">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数 </span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
+            <a href="/tags/Tornado/" rel="tag"># Tornado</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
         
-          
-            <h2 id="client-server-tcp-通信图"><a href="#Client-Server-TCP-通信图" class="headerlink" title="Client Server TCP 通信图"></a>Client Server TCP 通信图</h2><p><img src="/2017/04/01/client-server-socket/client_server.png" alt=""></p>
-<h2 id="server端"><a href="#Server端" class="headerlink" title="Server端"></a>Server端</h2><p>S1. socket函数： 创建一个socket<br>S2. bind函数： 把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址<br>S3. listen函数： 监听这个socket<br>S4. accept/accept4函数：阻塞等待Client的connect。<br>S5. recv/recvfrom/recvmsg/read函数: 从Client接收数据。<br>S6. send/sendto/sendmsg/write函数：给Client发送数据。</p>
-<h2 id="client端"><a href="#Client端" class="headerlink" title="Client端"></a>Client端</h2><p>C1. socket函数： 创建一个socket。<br>C2. connect函数：连接 Server<br>C3. send/sendto/sendmsg/write函数 : 向 Server 发消息<br>C4. recv/recvfrom/recvmsg/read函数: 从Server读取数据<br>C5. close函数：close这个socket</p>
-<h2 id="函数解释"><a href="#函数解释" class="headerlink" title="函数解释"></a>函数解释</h2><h3 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h3><blockquote>
-<blockquote>
-<p>int socket(int domain, int type, int protocol);</p>
-</blockquote>
-</blockquote>
-<p>创建一个socket。socket默认是blocking的，可以用fcntl设置成non-blocking，如果是non-blocking，对这个socket accept或者recv时没有ready就直接报错。</p>
-<ul>
-<li>domain : 又称为协议族（family）。常用的协议族有，AF_INET、AF_INET6、AF_LOCAL（或称AF_UNIX，Unix域socket）等等。<ul>
-<li>AF_INET代表IPV4: <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff543744(v=vs.85).aspx" target="_blank" rel="external">https://msdn.microsoft.com/en-us/library/windows/hardware/ff543744(v=vs.85).aspx</a></li>
-<li>AF_INET6代表IPV6：<a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff543746(v=vs.85).aspx" target="_blank" rel="external">https://msdn.microsoft.com/en-us/library/windows/hardware/ff543746(v=vs.85).aspx</a></li>
-<li>AF_UNIX代表UNIX Domain Socket IPC，主要用于进程间通信：<a href="https://akaedu.github.io/book/ch37s04.html" target="_blank" rel="external">https://akaedu.github.io/book/ch37s04.html</a></li>
-</ul>
-</li>
-<li>type：指定socket类型。常用的socket类型有，SOCK_STREAM、SOCK_DGRAM、SOCK_RAW等<ul>
-<li>SOCK_STREAM 代表TCP</li>
-<li>SOCK_DGRAM 代表UDP</li>
-<li>SOCK_RAW 工作在传输层，用于处理ICMP、IGMP等网络报文以及特殊协议报文</li>
-</ul>
-</li>
-<li>protocol：就是指定协议。常用的协议有，IPPROTO_TCP、IPPTOTO_UDP、IPPROTO_SCTP、IPPROTO_TIPC等，它们分别对应TCP传输协议、UDP传输协议、STCP传输协议、TIPC传输协议</li>
-<li>返回值是一个file descriptor (sockfd)  that refers to that socket</li>
-</ul>
-<h3 id="bind函数"><a href="#bind函数" class="headerlink" title="bind函数"></a>bind函数</h3><blockquote>
-<blockquote>
-<p>int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)</p>
-</blockquote>
-</blockquote>
-<p>把socket和一个地址绑定，地址可以是IPV4，IPV6或者UNIX Domain地址</p>
-<ul>
-<li>sockfd：之前socket函数返回的sockfd</li>
-<li><p>sockaddr： 地址</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">// IPV4地址</div><div class="line">struct sockaddr_in &#123;</div><div class="line">    sa_family_t    sin_family; /* address family: AF_INET */</div><div class="line">    in_port_t      sin_port;   /* port in network byte order */</div><div class="line">    struct in_addr sin_addr;   /* internet address */</div><div class="line">&#125;;</div><div class="line">// IPV6地址</div><div class="line">struct sockaddr_in6 &#123;</div><div class="line">    sa_family_t     sin6_family;   /* AF_INET6 */</div><div class="line">    in_port_t       sin6_port;     /* port number */</div><div class="line">    uint32_t        sin6_flowinfo; /* IPv6 flow information */</div><div class="line">    struct in6_addr sin6_addr;     /* IPv6 address */</div><div class="line">    uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */</div><div class="line">&#125;;</div><div class="line">// UNIX Domain地址</div><div class="line">#define UNIX_PATH_MAX    108</div><div class="line"></div><div class="line">struct sockaddr_un &#123;</div><div class="line">    sa_family_t sun_family;               /* AF_UNIX */</div><div class="line">    char        sun_path[UNIX_PATH_MAX];  /* pathname */</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-</li>
-<li><p>addrlen：地址长度</p>
-</li>
-<li>返回：成功返回0，错误返回-1</li>
-</ul>
-<h2 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h2><blockquote>
-<blockquote>
-<p>int listen(int sockfd, int backlog)</p>
-</blockquote>
-</blockquote>
-<p>监听一个socket，listen一般不会Block，内核会建立两个队列，SYN队列和ACCEPT队列，其中ACCPET队列的长度由backlog指定。</p>
-<ul>
-<li>sockfd：监听的socket</li>
-<li>backlog：ACCPET队列的长度</li>
-<li>返回：成功返回0，错误返回-1</li>
-</ul>
-<h3 id="accept函数"><a href="#accept函数" class="headerlink" title="accept函数"></a>accept函数</h3><blockquote>
-<blockquote>
-<p>int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)<br>int accept4(int sockfd, struct sockaddr <em>addr, socklen_t </em>addrlen, int flags);</p>
-</blockquote>
-</blockquote>
-<p>accpet函数将阻塞，等待ACCPT队列有元素。就是等待Client的connect来唤醒，建立一个Client的Socket并且返回。</p>
-<ul>
-<li>sockfd ：Server之前创建的socket的fd</li>
-<li>sockaddr：用于保存客户端的地址</li>
-<li>addrlen：用于保存客户端地址的长度</li>
-<li>flags：accept4比accept多出来的一个参数。flags = 0 时 accept4和accept没区别，flags=SOCK_NONBLOCK等于直接设置客户端socket为NONBLOCK；flags=SOCK_CLOEXEC等于直接设置客户端socket为FD_CLOEXEC，使得进程在fork或者execve时自动关闭socket。</li>
-<li>返回 客户端socket的fd</li>
-</ul>
-<h3 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h3><blockquote>
-<blockquote>
-<p>int connect(int sockfd, const struct sockaddr *addr,  socklen_t addrlen);</p>
-</blockquote>
-</blockquote>
-<p>连接server，是一个block函数</p>
-<ul>
-<li>sockfd：Client的socket fd</li>
-<li>addr：Server的地址</li>
-<li>addrlen：Server的地址的长度</li>
-<li>返回：成功返回0，错误返回-1</li>
-<li>详细做法：<ul>
-<li>发起SYN请求，请求与Server建立连接，此时称为第一次握手</li>
-<li>Server（listen之后） 在接受到SYN请求之后，把请求方放入SYN队列中，并给Client回复一个确认帧ACK，此帧还会携带一个请求与Client建立连接的请求标志，也就是SYN，这称为第二次握手</li>
-<li>Client收到SYN+ACK帧后，connect返回，并发送确认建立连接帧ACK给Server。这称为第三次握手</li>
-<li>Server收到ACK帧后，会把请求方从SYN队列中移出，放至ACCEPT队列中，而accept函数也等到了自己的资源，从阻塞中唤醒</li>
-</ul>
-</li>
-</ul>
-<h3 id="recvrecvfromrecvmsgread函数"><a href="#recv-recvfrom-recvmsg-read函数" class="headerlink" title="recv/recvfrom/recvmsg/read函数"></a>recv/recvfrom/recvmsg/read函数</h3><blockquote>
-<blockquote>
-<p>ssize_t recv(int sockfd, void <em>buf, size_t len, int flags)<br>ssize_t recvfrom(int sockfd, void </em>buf, size_t len, int flags, struct sockaddr <em>src_addr, socklen_t </em>addrlen);<br>ssize_t recvmsg(int socket, struct msghdr <em>message, int flags);<br>ssize_t read(int fd, void </em>buf, size_t count);</p>
-</blockquote>
-</blockquote>
-<p>从kernel中的TCP接收缓冲区里读取数据</p>
-<ul>
-<li>recv vs read : recv比read多一个flag参数用来控制<ul>
-<li>数据在不超过指定的长度的时候read会有多少读多少，没有数据则会一直等待。所以一般情况下：我们读取数据都需要采用循环读的方式读取数据，因为一次read 完毕不能保证读到我们需要长度的数据，read 完一次需要判断读到的数据长度再决定是否还需要再次读取。</li>
-<li>recv比read多一个flag参数用来控制，flag = MSG_WAITALLs时下recv 是会等待直到读取到buff_size 长度的数据。flag = MSG_PEEK,表示只是从系统缓冲区中读取内容,而不清除系统缓冲区的内容.这样下次读的时候,仍然是一样的内容.一般在有多个进程读写数据时可以使用这个标志.</li>
-</ul>
-</li>
-<li>recv vs recvfrom vs recvmsg : recv主要是针对有连接的情况（TCP），recvfrom和recvmsg 既可以读有连接的，也可以读无连接的（UDP）</li>
-</ul>
-<h2 id="sendsendtosendmsgwrite-函数"><a href="#send-sendto-sendmsg-write-函数" class="headerlink" title="send/sendto/sendmsg/write 函数"></a>send/sendto/sendmsg/write 函数</h2><blockquote>
-<blockquote>
-<p>ssize_t send(int sockfd, const void <em>buf, size_t len, int flags);<br>ssize_t write(int fd, const void </em>buf, size_t count)<br>ssize_t sendto(int sockfd, const void <em>buf, size_t len, int flags, const struct sockaddr </em>dest_addr, socklen_t addrlen);<br>ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags);</p>
-</blockquote>
-</blockquote>
-<p>write成功返回，只是buf中的数据被复制到了kernel中的TCP发送缓冲区。当kernel的该socket的发送缓冲区已满时，<strong>write会阻塞</strong>。对于每个socket，拥有自己的send buffer和receive buffer。从Linux 2.6开始，两个缓冲区大小都由系统来自动调节（autotuning），但一般在default和max之间浮动。 已经发送到网络的数据依然需要暂存在send buffer中，只有收到对方的ack后，kernel才从buffer中清除这一部分数据，为后续发送数据腾出空间。一般来说，由于接收端进程从socket读数据的速度跟不上发送端进程向socket写数据的速度，最终导致发送端write调用阻塞。</p>
-<ul>
-<li>send vs write ：send比write多一个flag参数用来控制<ul>
-<li>flags参数：<a href="https://linux.die.net/man/2/send" target="_blank" rel="external">https://linux.die.net/man/2/send</a></li>
-</ul>
-</li>
-<li>send vs sendto vs sendmsg：send主要是针对有连接的情况（TCP），sendto 和  sendmsg既可以写有连接的，也可以写无连接的（UDP）</li>
-</ul>
-<h2 id="closeshutdown函数"><a href="#close-shutdown函数" class="headerlink" title="close/shutdown函数"></a>close/shutdown函数</h2><blockquote>
-<blockquote>
-<p>int close(sockfd);<br>int shutdown(int sockfd, int how);</p>
-</blockquote>
-</blockquote>
-<p>区别：<a href="http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown" target="_blank" rel="external">http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#closedown</a></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
       
 
       
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/01/client-server-socket/" rel="next" title="最简单的Client Server TCP通信介绍">
+                <i class="fa fa-chevron-left"></i> 最简单的Client Server TCP通信介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
 
 
           </div>
@@ -760,6 +552,12 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="hypercomments_widget"></div>
+    
+  </div>
+
 
         </div>
         
@@ -779,8 +577,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -833,6 +640,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#select函数"><span class="nav-number">2.</span> <span class="nav-text">select函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#select-定义"><span class="nav-number">2.0.1.</span> <span class="nav-text">select 定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#select的使用"><span class="nav-number">2.0.2.</span> <span class="nav-text">select的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#select实现"><span class="nav-number">2.0.3.</span> <span class="nav-text">select实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#select的几大缺点"><span class="nav-number">2.0.4.</span> <span class="nav-text">select的几大缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#epoll函数"><span class="nav-number">3.</span> <span class="nav-text">epoll函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#epoll定义"><span class="nav-number">3.1.</span> <span class="nav-text">epoll定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#int-epoll_createint-size"><span class="nav-number">3.1.1.</span> <span class="nav-text">int epoll_create(int size)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-epoll_ctlint-epfd-int-op-int-fd-struct-epoll_event-event"><span class="nav-number">3.1.2.</span> <span class="nav-text">int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-epoll_waitint-epfd-struct-epoll_event-events-int-maxevents-int-timeout"><span class="nav-number">3.1.3.</span> <span class="nav-text">int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#epoll-为什么比select高效"><span class="nav-number">4.</span> <span class="nav-text">epoll 为什么比select高效?</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -947,6 +770,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
 
   
 
@@ -970,6 +797,8 @@
 
 		_hcwp.push({widget:"Bloggerstream", widget_id: 88976, selector:".hc-comment-count", label: "{\%COUNT%\}" });
 
+		
+		_hcwp.push({widget:"Stream", widget_id: 88976, xid: "2017/04/09/select-vs-epoll/"});
 		
 
 		(function() {
