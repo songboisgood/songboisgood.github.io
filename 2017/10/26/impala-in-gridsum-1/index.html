@@ -1,0 +1,956 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Impala是什么
+为什么国双采用Impala
+Impala架构
+Impalad
+Catalogd
+Statestored
+
+
+Impala的资源池
+Memory Limit
+软隔离
+
+
+
+Impala是什么Cloudera Impala是一个分布式的海量关系型数据查询引擎，有以下特点：
+
+低延时，非常适合作为交互式查询。
+Impala和Hive共享元数据和存储数据，使得Hive和SparkSQ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="impala-in-gridsum-1">
+<meta property="og:url" content="http://yoursite.com/2017/10/26/impala-in-gridsum-1/index.html">
+<meta property="og:site_name" content="Songbo's Blog">
+<meta property="og:description" content="Impala是什么
+为什么国双采用Impala
+Impala架构
+Impalad
+Catalogd
+Statestored
+
+
+Impala的资源池
+Memory Limit
+软隔离
+
+
+
+Impala是什么Cloudera Impala是一个分布式的海量关系型数据查询引擎，有以下特点：
+
+低延时，非常适合作为交互式查询。
+Impala和Hive共享元数据和存储数据，使得Hive和SparkSQ">
+<meta property="og:image" content="http://yoursite.com/2017/10/26/impala-in-gridsum-1/impala_components.png">
+<meta property="og:image" content="http://yoursite.com/2017/10/26/impala-in-gridsum-1/impala_subscription.png">
+<meta property="og:updated_time" content="2017-10-26T13:49:15.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="impala-in-gridsum-1">
+<meta name="twitter:description" content="Impala是什么
+为什么国双采用Impala
+Impala架构
+Impalad
+Catalogd
+Statestored
+
+
+Impala的资源池
+Memory Limit
+软隔离
+
+
+
+Impala是什么Cloudera Impala是一个分布式的海量关系型数据查询引擎，有以下特点：
+
+低延时，非常适合作为交互式查询。
+Impala和Hive共享元数据和存储数据，使得Hive和SparkSQ">
+<meta name="twitter:image" content="http://yoursite.com/2017/10/26/impala-in-gridsum-1/impala_components.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/10/26/impala-in-gridsum-1/"/>
+
+
+
+
+
+  <title> impala-in-gridsum-1 | Songbo's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Songbo's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/10/26/impala-in-gridsum-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Songbo Liao">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Songbo's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                impala-in-gridsum-1
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-26T21:45:44+08:00">
+                2017-10-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+            <!--noindex-->
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/10/26/impala-in-gridsum-1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count hc-comment-count" data-xid="2017/10/26/impala-in-gridsum-1/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+              <!--/noindex-->
+            
+          
+
+          
+          
+             <span id="/2017/10/26/impala-in-gridsum-1/" class="leancloud_visitors" data-flag-title="impala-in-gridsum-1">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ul>
+<li><a href="#impala是什么">Impala是什么</a></li>
+<li><a href="#为什么国双采用impala">为什么国双采用Impala</a></li>
+<li><a href="#Impala架构">Impala架构</a><ul>
+<li><a href="#impalad">Impalad</a></li>
+<li><a href="#catalogd">Catalogd</a></li>
+<li><a href="#statestored">Statestored</a></li>
+</ul>
+</li>
+<li><a href="#impala的资源池">Impala的资源池</a><ul>
+<li><a href="#memory-limit">Memory Limit</a></li>
+<li><a href="#软隔离">软隔离</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="impala是什么"><a href="#Impala是什么" class="headerlink" title="Impala是什么"></a>Impala是什么</h2><p>Cloudera Impala是一个分布式的海量关系型数据查询引擎，有以下特点：</p>
+<ul>
+<li>低延时，非常适合作为交互式查询。</li>
+<li>Impala和Hive共享元数据和存储数据，使得Hive和SparkSQL生成的数据可以在Impala里刷新后直接查询，这一点非常重要，因为目前业内广泛采用Hive和SparkSQL做数据的ETL，ETL后数据只要简单刷新就可以在Impala里做交互式查询，为网站，APP等客户端直接提供快速的数据服务。</li>
+<li>构建在Hive和HDFS的基础之上，由于Hive和HDFS都是业内久经考验的成熟技术，基本不会出现数据丢失或者集群彻底挂掉的情况。HIve和HDFS网上信息非常多，很多Impala问题可以用Hive和HDFS的角度来解决，降低了解决问题的成本。</li>
+</ul>
+<h2 id="为什么国双采用impala"><a href="#为什么国双采用Impala" class="headerlink" title="为什么国双采用Impala"></a>为什么国双采用Impala</h2><p>作为国内第一家在纳斯达克上市的大数据公司，国双每天处理和查询的数据量级非常大，所以我们采用了业界比较通用的Spark和Hive进行数据ETL，每天无论是国双的咨询师还是外部客户都需要在海量数据中第一时间得到有用的信息，而Cloudera Impala提供了这一能力。</p>
+<h2 id="impala架构"><a href="#Impala架构" class="headerlink" title="Impala架构"></a>Impala架构</h2><p>官网上对Impala的架构和组件有一些介绍：<a href="https://www.cloudera.com/documentation/enterprise/5-8-x/topics/impala_components.html#intro_components" target="_blank" rel="external">https://www.cloudera.com/documentation/enterprise/5-8-x/topics/impala_components.html#intro_components</a> 但说的并不非常清晰 。Impala由三大组件构成：</p>
+<p><img src="/2017/10/26/impala-in-gridsum-1/impala_components.png" alt=""></p>
+<h3 id="impalad"><a href="#Impalad" class="headerlink" title="Impalad"></a>Impalad</h3><p>基本是每个DataNode上都会启动一个Impalad进程，Impalad主要扮演两个角色：</p>
+<ul>
+<li>Coordinator：<ul>
+<li>负责接收客户端发来的查询，解析查询，构建查询计划</li>
+<li>把查询子任务分发给很多Executor</li>
+<li>收集Executor返回的结果，组合后返回给客户端</li>
+<li>对于客户端发送来的DDL，提交给Catalogd处理</li>
+</ul>
+</li>
+<li>Executor：<ul>
+<li>执行查询子任务，将子任务结果返回给Coordinator</li>
+</ul>
+</li>
+</ul>
+<p>在Impala2.9中增加了新的Feature：is_executor and is_coordinator 。可以指定一个Impalad只作为Executor或者Coordinator。可以减轻Coordinator的负担，而且让职责单一化。</p>
+<h3 id="catalogd"><a href="#Catalogd" class="headerlink" title="Catalogd"></a>Catalogd</h3><p>整个集群只有一个Catalogd，负责所有元数据的更新和获取。每个Impalad本地会缓存元数据信息。在Impala集群中Catalogd主要处理DDL，和Hive MetaStore通信，在Hive MetaStore里更新表的Schema。在Impala集群中Catalogd可以算是一大瓶颈，所以Impala本身不是一个很好的ETL工具，不适合承载大量的DDL操作。如果业务上允许最好是可以在Hive来做DDL，Impala只是做查询引擎。这个系列后续文章会仔细分析Catalogd的问题。</p>
+<h3 id="statestored"><a href="#Statestored" class="headerlink" title="Statestored"></a>Statestored</h3><p>整个集群只有一个Statestored，作为集群的订阅中心，负责集群不同组件的信息同步。所谓订阅如下图：</p>
+<p><img src="/2017/10/26/impala-in-gridsum-1/impala_subscription.png" alt=""></p>
+<p>如上图所示各组件会在StateStored里订阅某个Topic，例如组件1，组件2，组件3订阅了Topic_1。于是StateStored会定期给组件1、组件2、组件3发送心跳，心跳的内容就是这个Topic的数据。订阅者例如组件1可以更新数据然后作为心跳的Response返回给StateStored，这样在下一次StateStored发送给组件2、组件3的心跳里就包含了组件1对于Topic_1的更新。上图中组件2同时订阅了两个Topic，StateStored会把两个Topic的数据通过过一次心跳发给组件2，不会发送两次。  </p>
+<p>目前已知的Topic有：</p>
+<ul>
+<li>impala-membership ：负责全局广播每个Impalad节点的进程健康状态，各Impalad都订阅了这个Topic，所以StateStored会定期发送这个Topic的心跳，广播所有节点的健康信息，也从心跳的Response得到所有节点的健康状态。</li>
+<li>catalog-update：负责广播元数据的更新，Catalogd和各Impalad都订阅了这个Topic。所以StateStored会定期发送这个Topic的心跳，Catalogd收到这个心跳后会在Response里放入更新的表元数据，StateStored收到更新后会放入下一次广播的心跳里，Impalad收到心跳后会用更新的元数据更新本地的元数据信息。</li>
+<li>impala-request-queue：负责广播每个Pool占用和Queue的情况，各Impalad都订阅了这个Topic，关于Pool和Queue下面一节会有详细的描述。</li>
+</ul>
+<blockquote>
+<blockquote>
+<p>如果大家去看其他一些类似的分布式数据库例如Facebook的Presto，会发现其组件结构和Impala是非常类似的，虽然名字略有不同。</p>
+</blockquote>
+</blockquote>
+<h2 id="impala的资源池"><a href="#Impala的资源池" class="headerlink" title="Impala的资源池"></a>Impala的资源池</h2><p>Impala可以划分很多资源池（Pool），用来对不同业务做资源隔离，对于一个Impala查询来说，用户可以设置使用哪个Pool，如果不设置，默认使用Default Pool。每个Pool有以下设置：</p>
+<ul>
+<li>最大内存：Pool里的所用查询能用的总内存上限</li>
+<li>最大运行查询数量：Pool里可以同时运行的最大查询数量</li>
+<li>Queue的长度：查询可能因为最大内存，最大运行数量等限制被Queue住。如果Queue长度已经到达这个上限，查询会被直接拒绝。</li>
+<li>Queue Timeout：查询在Queue里等待的时间，超过这个时间查询会被报错返回。</li>
+<li>Default Query Memory Limit</li>
+</ul>
+<h3 id="memory-limit"><a href="#Memory-Limit" class="headerlink" title="Memory Limit"></a>Memory Limit</h3><p>对于一个Impala查询来说，用户可以设置 Memory Limit，就是这个查询在单个Impalad节点上能用到的内存上限，如果查询在某个节点超过了这个上限会被直接报错返回。如果用户不设置，默认使用Pool的Default Query Memory Limit，如果Pool没有设置，Impala会自己来估计这个值。据我们的使用经验来说，Impala自己估计的值非常不准确（如果表有统计信息会好一些，但还是很不准）。所以建议用户根据查询大小和复杂程度设置这个值。</p>
+<p>Memory Limit对查询的影响很大，例如一个查询的Memory Limit = 10G，有30台Impalad节点，Impala就会认为这个查询会用到10G * 30 = 300G内存。如果Pool的剩余内存目前小于300G，查询就会被Queue住等待资源。所以Memory Limit如果设置的太大会浪费内存，导致并发度降低；如果设置的太小会导致查询失败。这个系列后面会有一篇文章来说国双是如何如何通过机器学习的方式来解决这个问题的。</p>
+<h3 id="软隔离"><a href="#软隔离" class="headerlink" title="软隔离"></a>软隔离</h3><p>由于Impala的每个Impalad节点都可以接受查询，对于每个Pool现在有多少查询，占了多少内存，Queue了多少，这些信息也是每个Impalad更新，通过Statestored来广播到其他Impalad，所以这个信息可能在每个节点上可能是不一致的。当一个Impalad收到查询需要做一些决策例如是否拒绝，是否Queue住，本地的这个决策信息可能是旧的，所以Impala基于Pool的资源隔离本身来说是一种软隔离，也就是说对于任何一个Pool来说，其用到的内存有可能会超过最大内存，运行的查询数量有可能会超过Pool设置的最大查询数量。这个我们在实际的使用中也证明了。软隔离问题会带来两个风险：</p>
+<ol>
+<li>单个节点申请的内存在某个时刻超过了分配给Impalad进程的内存，这个会导致Impalad OOM退出</li>
+<li>某个Pool在某一个时刻使用了远远超过这个Pool的资源，这个对于不同业务用Pool来做资源隔离是不利的。</li>
+</ol>
+<p>这个问题我们也跟Impala社区的开发者做过讨论，最后使用的方案是：<strong>单个Pool指定唯一的Coordinator</strong>，这个Pool的所有查询都发送给同一个Impalad。于是这个Coordinator时刻都有这个资源池最新的信息，就从软隔离进化成了硬隔离，缺点是会带来单点问题，我们也采取了主备的方式来避免这一问题，后续的文章会进一步说明。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/09/select-vs-epoll/" rel="next" title="select vs epoll">
+                <i class="fa fa-chevron-left"></i> select vs epoll
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="hypercomments_widget"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Songbo Liao" />
+          <p class="site-author-name" itemprop="name">Songbo Liao</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#impala是什么"><span class="nav-number">1.</span> <span class="nav-text">Impala是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么国双采用impala"><span class="nav-number">2.</span> <span class="nav-text">为什么国双采用Impala</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#impala架构"><span class="nav-number">3.</span> <span class="nav-text">Impala架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#impalad"><span class="nav-number">3.1.</span> <span class="nav-text">Impalad</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#catalogd"><span class="nav-number">3.2.</span> <span class="nav-text">Catalogd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#statestored"><span class="nav-number">3.3.</span> <span class="nav-text">Statestored</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#impala的资源池"><span class="nav-number">4.</span> <span class="nav-text">Impala的资源池</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#memory-limit"><span class="nav-number">4.1.</span> <span class="nav-text">Memory Limit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#软隔离"><span class="nav-number">4.2.</span> <span class="nav-text">软隔离</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Songbo Liao</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+		<script type="text/javascript">
+		_hcwp = window._hcwp || [];
+
+		_hcwp.push({widget:"Bloggerstream", widget_id: 88976, selector:".hc-comment-count", label: "{\%COUNT%\}" });
+
+		
+		_hcwp.push({widget:"Stream", widget_id: 88976, xid: "2017/10/26/impala-in-gridsum-1/"});
+		
+
+		(function() {
+		if("HC_LOAD_INIT" in window)return;
+		HC_LOAD_INIT = true;
+		var lang = (navigator.language || navigator.systemLanguage || navigator.userLanguage || "en").substr(0, 2).toLowerCase();
+		var hcc = document.createElement("script"); hcc.type = "text/javascript"; hcc.async = true;
+		hcc.src = ("https:" == document.location.protocol ? "https" : "http")+"://w.hypercomments.com/widget/hc/88976/"+lang+"/widget.js";
+		var s = document.getElementsByTagName("script")[0];
+		s.parentNode.insertBefore(hcc, s.nextSibling);
+		})();
+		</script>
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EwzvCsk0iRkVjhwCjGf8OlG4-gzGzoHsz", "oT97Xq5wdUzBRRWG788ysT9n");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
