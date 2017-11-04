@@ -365,9 +365,10 @@
 </ul>
 <h2 id="impala是什么"><a href="#Impala是什么" class="headerlink" title="Impala是什么"></a>Impala是什么</h2><p>Cloudera Impala是一个分布式的海量关系型数据查询引擎，有以下特点：</p>
 <ul>
-<li>低延时，非常适合作为交互式查询。</li>
-<li>Impala和Hive共享元数据和存储数据，使得Hive和SparkSQL生成的数据可以在Impala里刷新后直接查询，这一点非常重要，因为目前业内广泛采用Hive和SparkSQL做数据的ETL，ETL后数据只要简单刷新就可以在Impala里做交互式查询，为网站，APP等客户端直接提供快速的数据服务。</li>
-<li>构建在Hive和HDFS的基础之上，由于Hive和HDFS都是业内久经考验的成熟技术，基本不会出现数据丢失或者集群彻底挂掉的情况。HIve和HDFS网上信息非常多，很多Impala问题可以用Hive和HDFS的角度来解决，降低了解决问题的成本。</li>
+<li>低延时，非常适合交互式查询的场景。我们和Hive on Tez, Azure SQL Data Warehouse做过查询性能对比，Impala的性能优势非常明显。</li>
+<li>Impala和Hive共享元数据和存储数据，使得Hive和SparkSQL生成的数据可以在Impala里刷新后直接查询，这一点非常重要，因为目前业内广泛采用Hive和SparkSQL做数据的ETL，ETL后数据只要简单刷新就可以在Impala里做交互式查询，为网站，APP等客户端直接提供及时的数据服务。</li>
+<li>构建在Hive和HDFS的基础之上，由于Hive和HDFS都是业内久经考验的成熟技术，基本不会出现数据丢失或者集群彻底挂掉的情况。Hive和HDFS网上信息非常多，很多Impala问题可以从Hive和HDFS的角度来解决，降低了排查和解决问题的成本。</li>
+<li>可扩展性强，扩展成本低：其他分布式数据库例如GreenPlum在可扩展性上有很多问题，根据 <a href="https://gpdb.docs.pivotal.io/500/admin_guide/expand/expand-redistribute.html" target="_blank" rel="external">https://gpdb.docs.pivotal.io/500/admin_guide/expand/expand-redistribute.html</a> GreenPlum在加节点后需要手动Redistributing来把老数据搬运到新节点上，在Redistributing期间对集群整体性能有较大影响，而且正在Redistributing的Table或者分区会被锁上无法访问。而Impala只要加HDFS和Impala节点就可以完成扩容，HDFS Balancer会负责数据缓慢迁移，而扩容期间查询性能几乎不会受任何影响。</li>
 </ul>
 <h2 id="为什么国双采用impala"><a href="#为什么国双采用Impala" class="headerlink" title="为什么国双采用Impala"></a>为什么国双采用Impala</h2><p>作为国内第一家在纳斯达克上市的大数据公司，国双每天处理和查询的数据量级非常大，所以我们采用了业界比较通用的Spark和Hive进行数据ETL，每天无论是国双的咨询师还是外部客户都需要在海量数据中第一时间得到有用的信息，而Cloudera Impala提供了这一能力。</p>
 <h2 id="impala架构"><a href="#Impala架构" class="headerlink" title="Impala架构"></a>Impala架构</h2><p>官网上对Impala的架构和组件有一些介绍：<a href="https://www.cloudera.com/documentation/enterprise/5-8-x/topics/impala_components.html#intro_components" target="_blank" rel="external">https://www.cloudera.com/documentation/enterprise/5-8-x/topics/impala_components.html#intro_components</a> 但说的并不非常清晰 。Impala由三大组件构成：</p>
@@ -410,8 +411,8 @@
 <li>Queue Timeout：查询在Queue里等待的时间，超过这个时间查询会被报错返回。</li>
 <li>Default Query Memory Limit</li>
 </ul>
-<h3 id="memory-limit"><a href="#Memory-Limit" class="headerlink" title="Memory Limit"></a>Memory Limit</h3><p>对于一个Impala查询来说，用户可以设置 Memory Limit，就是这个查询在单个Impalad节点上能用到的内存上限，如果查询在某个节点超过了这个上限会被直接报错返回。如果用户不设置，默认使用Pool的Default Query Memory Limit，如果Pool没有设置，Impala会自己来估计这个值。据我们的使用经验来说，Impala自己估计的值非常不准确（如果表有统计信息会好一些，但还是很不准）。所以建议用户根据查询大小和复杂程度设置这个值。</p>
-<p>Memory Limit对查询的影响很大，例如一个查询的Memory Limit = 10G，有30台Impalad节点，Impala就会认为这个查询会用到10G * 30 = 300G内存。如果Pool的剩余内存目前小于300G，查询就会被Queue住等待资源。所以Memory Limit如果设置的太大会浪费内存，导致并发度降低；如果设置的太小会导致查询失败。这个系列后面会有一篇文章来说国双是如何如何通过机器学习的方式来解决这个问题的。</p>
+<h3 id="memory-limit"><a href="#Memory-Limit" class="headerlink" title="Memory Limit"></a>Memory Limit</h3><p>对于一个Impala查询来说，用户可以设置 Memory Limit（mem_limit参数），就是这个查询在单个Impalad节点上能用到的内存上限，如果查询在某个节点超过了这个上限会被直接报错返回。如果用户不设置，默认使用Pool的Default Query Memory Limit，如果Pool没有设置，Impala会自己来估计这个值。据我们的使用经验来说，Impala自己估计的值非常不准确（如果表有统计信息会好一些，但还是很不准）。所以建议用户根据查询大小和复杂程度设置这个值。</p>
+<p>mem_limit参数对查询的影响很大，例如一个查询set mem_limit = 10G，有30台Impalad节点，Impala就会认为这个查询会用到10G * 30 = 300G内存。如果Pool的剩余内存目前小于300G，查询就会被Queue住等待资源。所以mem_limit如果设置的太大会浪费内存，导致并发度降低；如果设置的太小会导致查询失败。这个系列后面会有一篇文章来说国双是如何通过机器学习的方式来解决这个问题的。</p>
 <h3 id="软隔离"><a href="#软隔离" class="headerlink" title="软隔离"></a>软隔离</h3><p>由于Impala的每个Impalad节点都可以接受查询，对于每个Pool现在有多少查询，占了多少内存，Queue了多少，这些信息也是每个Impalad更新，通过Statestored来广播到其他Impalad，所以这个信息可能在每个节点上可能是不一致的。当一个Impalad收到查询需要做一些决策例如是否拒绝，是否Queue住，本地的这个决策信息可能是旧的，所以Impala基于Pool的资源隔离本身来说是一种软隔离，也就是说对于任何一个Pool来说，其用到的内存有可能会超过最大内存，运行的查询数量有可能会超过Pool设置的最大查询数量。这个我们在实际的使用中也证明了。软隔离问题会带来两个风险：</p>
 <ol>
 <li>单个节点申请的内存在某个时刻超过了分配给Impalad进程的内存，这个会导致Impalad OOM退出</li>
@@ -1022,7 +1023,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
